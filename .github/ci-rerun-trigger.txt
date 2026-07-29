@@ -1,0 +1,4 @@
+Rerun trigger file
+
+This file was created to trigger a rerun of the Security Scan workflow.
+Timestamp: 2026-07-29T05:27:00Z
