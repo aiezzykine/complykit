@@ -39,7 +39,7 @@ jobs:
         run: npm audit --production || true
 
       - name: OWASP Dependency-Check
-        uses: jeremylong/DependencyCheck_Action@main
+        uses: jeremylong/dependency-check-action@v2
         with:
           project: 'ComplyKit'
           path: '.'
