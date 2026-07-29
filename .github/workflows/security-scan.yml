@@ -1,0 +1,55 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: ${{ always() }}
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: 'Trivy'
+
+      - name: Run npm audit (if package.json exists)
+        if: ${{ hashFiles('package.json') != '' }}
+        run: npm audit --production || true
+
+      - name: OWASP Dependency-Check
+        uses: jeremylong/DependencyCheck_Action@main
+        with:
+          project: 'ComplyKit'
+          path: '.'
+          format: 'JSON'
+          args: >
+            --enableExperimental
+
+      - name: Upload dependency-check results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: dependency-check-report.json
